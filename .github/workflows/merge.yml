@@ -1,0 +1,34 @@
+name: Merge Dylib Architectures
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  merge:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Merge architectures
+      run: |
+        # 检查文件是否存在
+        ls -la *.dylib
+        
+        # 使用lipo合并架构
+        lipo -create arm64.dylib armv7.dylib -output universal.dylib
+        
+        # 验证合并结果
+        lipo -info universal.dylib
+        
+        # 检查依赖关系
+        otool -L universal.dylib
+        
+    - name: Upload merged file
+      uses: actions/upload-artifact@v3
+      with:
+        name: universal-dylib
+        path: universal.dylib 
